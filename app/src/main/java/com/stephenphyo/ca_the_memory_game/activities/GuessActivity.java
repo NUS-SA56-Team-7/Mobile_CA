@@ -37,7 +37,7 @@ public class GuessActivity extends AppCompatActivity implements AdapterView.OnIt
     List<Integer> matched_indices = new ArrayList<Integer>();
 
     /*** Views & Components ***/
-    MediaPlayer soundFlipOpen;
+    MediaPlayer noMatch;
     MediaPlayer soundBackgroundMusic;
     GridView gridView;
     GridAdapter adapter;
@@ -47,7 +47,7 @@ public class GuessActivity extends AppCompatActivity implements AdapterView.OnIt
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_guess);
 
-        soundFlipOpen = MediaPlayer.create(this, R.raw.flip_open);
+        noMatch = MediaPlayer.create(this, R.raw.no_match);
         soundBackgroundMusic = MediaPlayer.create(this, R.raw.background_music);
         soundBackgroundMusic.start();
         soundBackgroundMusic.setLooping(true);
@@ -83,7 +83,6 @@ public class GuessActivity extends AppCompatActivity implements AdapterView.OnIt
         if (!picked_indices.contains(pos) && !matched_indices.contains(pos)) {
             clickCount++;
             picked_indices.add(pos);
-            soundFlipOpen.start();
 
             adapter.updateData(pos, shuffledImages.get(pos));
             Log.d("Picked Data", String.valueOf(picked_indices));
@@ -94,9 +93,11 @@ public class GuessActivity extends AppCompatActivity implements AdapterView.OnIt
             if (clickCount == 2) {
                 String firstPick = shuffledImages.get(picked_indices.get(0));
                 String secondPick = shuffledImages.get(picked_indices.get(1));
+                gridView.setEnabled(false);
 
                 if (firstPick.equals(secondPick)) {
                     scoreCount++;
+                    gridView.setEnabled(true);
 
                     TextView textScore = findViewById(R.id.text_score);
                     textScore.setText(String.format("%d of 6 matches", scoreCount));
@@ -107,9 +108,11 @@ public class GuessActivity extends AppCompatActivity implements AdapterView.OnIt
                     picked_indices.remove(0);
                 }
                 else {
+                    noMatch.start();
                     Runnable runnable = new Runnable() {
                         @Override
                         public void run() {
+                            gridView.setEnabled(true);
                             adapter.updateData(picked_indices.get(0), "drawable:image");
                             adapter.updateData(picked_indices.get(1), "drawable:image");
 
@@ -169,7 +172,7 @@ public class GuessActivity extends AppCompatActivity implements AdapterView.OnIt
         super.onDestroy();
         soundBackgroundMusic.stop();
         soundBackgroundMusic.release();
-        soundFlipOpen.release();
+        noMatch.release();
     }
 
     private void runTimer(){
